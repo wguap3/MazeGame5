@@ -5,45 +5,59 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/abstract_background_gradient_colorful_design_677411_3431"
+    android:background="@drawable/african_forest_liana_frame_with_jungle_leaves_8071_64283"
     tools:context=".MazeActivity1">
 
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="339dp"
-        android:layout_height="123dp"
+    <com.example.mazegame5.MazeView
+        android:id="@+id/mazeView"
+        android:layout_width="276dp"
+        android:layout_height="332dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.044"
-        app:srcCompat="@drawable/mazegame_15_02_2025_2" />
+        app:layout_constraintVertical_bias="0.455" />
 
-    <com.example.mazegame5.MazeView
-        android:id="@+id/mazeView"
-        android:layout_width="337dp"
-        android:layout_height="454dp"
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="377dp"
+        android:layout_height="141dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.47"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.041"
+        app:srcCompat="@drawable/maze_game_24_02_2025" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="546dp"
+        android:layout_height="149dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageView"
+        app:layout_constraintVertical_bias="0.863"
+        app:srcCompat="@drawable/rrrrr_24_02_2025" />
 
     <Button
-        android:id="@+id/button"
-        android:layout_width="338dp"
-        android:layout_height="93dp"
-        android:backgroundTint="#2348EB"
-        android:text="Главный экран"
+        android:id="@+id/button2"
+        android:layout_width="255dp"
+        android:layout_height="66dp"
+        android:backgroundTint="#00FFFFFF"
         android:onClick="Button21"
-        android:textColor="#00BCD4"
+        android:text="Главный экран"
+        android:textColor="#F3CC1A"
         android:textSize="24sp"
         android:textStyle="bold|italic"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.506"
+        app:layout_constraintHorizontal_bias="0.57"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.89" />
+        app:layout_constraintVertical_bias="0.823" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

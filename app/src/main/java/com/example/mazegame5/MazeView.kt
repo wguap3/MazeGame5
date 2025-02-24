@@ -37,15 +37,9 @@ class MazeView @JvmOverloads constructor(
     private val path = mutableListOf<Pair<Int, Int>>()
 
     private val pathPaint = Paint().apply {
-        color = Color.WHITE
-        strokeWidth = 5f
+        color = Color.parseColor("#8B4513") // Коричневый цвет для пути
+        strokeWidth = 10f // Увеличена толщина линии
         style = Paint.Style.STROKE
-        isAntiAlias = true
-    }
-
-    private val finishPaint = Paint().apply {
-        color = Color.GREEN
-        style = Paint.Style.FILL
         isAntiAlias = true
     }
 
@@ -62,6 +56,7 @@ class MazeView @JvmOverloads constructor(
         typeface = Typeface.DEFAULT_BOLD
         textAlign = Paint.Align.CENTER
         setShadowLayer(10f, 5f, 5f, Color.BLACK)
+        color = Color.YELLOW // Желтый цвет текста
     }
 
     private lateinit var textShader: Shader
@@ -75,8 +70,11 @@ class MazeView @JvmOverloads constructor(
     private var playerRotation = 0f
     private var isMirrored = false // Флаг для отзеркаливания
 
+    // Изображение банана для финиша
+    private lateinit var bananaBitmap: Bitmap
+
     init {
-        paint.color = Color.BLUE
+        paint.color = Color.parseColor("#8B4513") // Коричневый цвет для стен
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 5f
         paint.isAntiAlias = true
@@ -84,6 +82,27 @@ class MazeView @JvmOverloads constructor(
 
         // Загрузите кадры анимации
         loadPlayerFrames()
+
+        // Загрузите изображение банана
+        bananaBitmap = loadBananaImage()
+    }
+
+    private fun loadBananaImage(): Bitmap {
+        return try {
+            val resourceId = resources.getIdentifier(
+                "png_clipart_banana_banana_removebg_preview",
+                "drawable",
+                context.packageName
+            )
+            if (resourceId != 0) {
+                BitmapFactory.decodeResource(resources, resourceId)
+            } else {
+                throw RuntimeException("Файл банана не найден в папке res/drawable")
+            }
+        } catch (e: Exception) {
+            Log.e("MazeView", "Ошибка загрузки изображения банана: ${e.message}")
+            throw e
+        }
     }
 
     override fun onAttachedToWindow() {
@@ -149,8 +168,8 @@ class MazeView @JvmOverloads constructor(
         // Инициализация градиента для текста
         textShader = LinearGradient(
             0f, 0f, width.toFloat(), height.toFloat(),
-            Color.parseColor("#1E90FF"), // Голубой
-            Color.parseColor("#00008B"), // Темно-синий
+            Color.parseColor("#FFD700"), // Золотой
+            Color.parseColor("#FFA500"), // Оранжевый
             Shader.TileMode.CLAMP
         )
     }
@@ -166,10 +185,22 @@ class MazeView @JvmOverloads constructor(
 
                 when (maze[row][col]) {
                     1 -> {
-                        paint.color = Color.BLUE
+                        paint.color = Color.parseColor("#8B4513") // Коричневый цвет для стен
                         canvas.drawRect(x, y, x + cellSize, y + cellSize, paint)
                     }
-                    2 -> canvas.drawCircle(x + cellSize / 2, y + cellSize / 2, cellSize / 4, finishPaint)
+                    2 -> {
+                        // Рисуем изображение банана вместо зеленого круга
+                        val bananaWidth = cellSize * 0.8f
+                        val bananaHeight = cellSize * 0.8f
+                        val left = x + (cellSize - bananaWidth) / 2
+                        val top = y + (cellSize - bananaHeight) / 2
+                        canvas.drawBitmap(
+                            bananaBitmap,
+                            null,
+                            RectF(left, top, left + bananaWidth, top + bananaHeight),
+                            null
+                        )
+                    }
                     3 -> canvas.drawCircle(x + cellSize / 2, y + cellSize / 2, cellSize / 4, startPaint)
                 }
             }
