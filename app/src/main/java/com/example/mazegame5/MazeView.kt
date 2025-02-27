@@ -15,30 +15,58 @@ class MazeView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     private val paint = Paint()
-    private val maze: Array<IntArray> = arrayOf(
-        intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
-        intArrayOf(1, 0, 3, 1, 0, 0, 0, 1),
-        intArrayOf(1, 0, 1, 1, 0, 1, 0, 1),
-        intArrayOf(1, 0, 0, 0, 0, 1, 0, 1),
-        intArrayOf(1, 1, 1, 1, 0, 1, 1, 1),
-        intArrayOf(1, 0, 0, 0, 0, 0, 0, 1),
-        intArrayOf(1, 0, 1, 1, 1, 1, 0, 1),
-        intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)
+    private val levels = listOf(
+        // Уровень 1
+        arrayOf(
+            intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
+            intArrayOf(1, 0, 3, 1, 0, 0, 0, 1), // Стартовая позиция (3) на (2, 1)
+            intArrayOf(1, 0, 1, 1, 0, 1, 0, 1),
+            intArrayOf(1, 0, 0, 0, 0, 1, 0, 1),
+            intArrayOf(1, 1, 1, 1, 0, 1, 1, 1),
+            intArrayOf(1, 0, 0, 0, 0, 0, 0, 1),
+            intArrayOf(1, 0, 1, 1, 1, 1, 0, 1),
+            intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)  // Финиш (2)
+        ),
+        // Уровень 2
+        arrayOf(
+            intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
+            intArrayOf(1, 0, 0, 0, 1, 0, 3, 1), // Стартовая позиция (3) на (1, 1)
+            intArrayOf(1, 0, 1, 0, 1, 0, 1, 1),
+            intArrayOf(1, 0, 1, 0, 0, 0, 1, 1),
+            intArrayOf(1, 0, 1, 1, 1, 0, 0, 1),
+            intArrayOf(1, 0, 0, 0, 0, 1, 0, 1),
+            intArrayOf(1, 0, 1, 1, 0, 0, 1, 1),
+            intArrayOf(1, 1, 1, 1, 1, 2, 1, 1)  // Финиш (2)
+        ),
+        // Уровень 3
+        arrayOf(
+            intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
+            intArrayOf(1, 0, 0, 0, 0, 0, 1, 1), // Стартовая позиция (3) на (2, 1)
+            intArrayOf(1, 0, 1, 1, 1, 0, 1, 1),
+            intArrayOf(1, 0, 0, 0, 0, 0, 3, 1),
+            intArrayOf(1, 0, 1, 1, 1, 1, 1, 1),
+            intArrayOf(1, 0, 0, 0, 0, 0, 0, 1),
+            intArrayOf(1, 0, 1, 1, 1, 1, 0, 1),
+            intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)  // Финиш (2)
+        )
     )
 
-    private var playerX = 2
-    private var playerY = 1
+    private var currentLevel = 0
+    private var maze: Array<IntArray> = levels[currentLevel]
+    private var playerX = 0
+    private var playerY = 0
     private var prevPlayerX = playerX
     private var prevPlayerY = playerY
     private var cellSize: Float = 100f
     private var offsetX = 0f
     private var offsetY = 0f
     private var isLevelCompleted = false
+    private var isGameCompleted = false
     private val path = mutableListOf<Pair<Int, Int>>()
 
     private val pathPaint = Paint().apply {
-        color = Color.parseColor("#8B4513") // Коричневый цвет для пути
-        strokeWidth = 10f // Увеличена толщина линии
+        color = Color.parseColor("#8B4513")
+        strokeWidth = 10f
         style = Paint.Style.STROKE
         isAntiAlias = true
     }
@@ -56,35 +84,49 @@ class MazeView @JvmOverloads constructor(
         typeface = Typeface.DEFAULT_BOLD
         textAlign = Paint.Align.CENTER
         setShadowLayer(10f, 5f, 5f, Color.BLACK)
-        color = Color.YELLOW // Желтый цвет текста
+        color = Color.YELLOW
     }
 
     private lateinit var textShader: Shader
 
-    // Анимация игрока
-    private val playerFrames = mutableListOf<Bitmap>() // Список кадров анимации
-    private var currentFrameIndex = 0 // Текущий кадр
-    private val handler = Handler(Looper.getMainLooper()) // Handler для анимации
+    private val playerFrames = mutableListOf<Bitmap>()
+    private var currentFrameIndex = 0
+    private val handler = Handler(Looper.getMainLooper())
 
-    // Угол поворота игрока
     private var playerRotation = 0f
-    private var isMirrored = false // Флаг для отзеркаливания
+    private var isMirrored = false
 
-    // Изображение банана для финиша
     private lateinit var bananaBitmap: Bitmap
 
     init {
-        paint.color = Color.parseColor("#8B4513") // Коричневый цвет для стен
+        paint.color = Color.parseColor("#8B4513")
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 5f
         paint.isAntiAlias = true
+
+        // Находим стартовую позицию и устанавливаем начальные координаты игрока
+        val (startX, startY) = findStartPosition()
+        playerX = startX
+        playerY = startY
         path.add(Pair(playerX, playerY))
 
-        // Загрузите кадры анимации
-        loadPlayerFrames()
+        // Устанавливаем начальное направление обезьяны (влево)
+        playerRotation = 360f // Смотрит влево
+        isMirrored = false // Не отзеркаливать
 
-        // Загрузите изображение банана
+        loadPlayerFrames()
         bananaBitmap = loadBananaImage()
+    }
+
+    private fun findStartPosition(): Pair<Int, Int> {
+        for (row in maze.indices) {
+            for (col in maze[row].indices) {
+                if (maze[row][col] == 3) { // Ищем стартовую позицию (3)
+                    return Pair(col, row) // Возвращаем координаты (x, y)
+                }
+            }
+        }
+        throw RuntimeException("Стартовая позиция не найдена в лабиринте!")
     }
 
     private fun loadBananaImage(): Bitmap {
@@ -117,7 +159,6 @@ class MazeView @JvmOverloads constructor(
                 if (resourceId != 0) {
                     val frame = BitmapFactory.decodeResource(resources, resourceId)
                     if (frame != null) {
-                        // Отзеркаливаем кадр по горизонтали
                         val mirroredFrame = mirrorBitmap(frame)
                         playerFrames.add(mirroredFrame)
                     } else {
@@ -128,7 +169,6 @@ class MazeView @JvmOverloads constructor(
                 }
             }
 
-            // Масштабируйте кадры до нужного размера
             playerFrames.replaceAll {
                 Bitmap.createScaledBitmap(it, (cellSize / 0.85).toInt(), (cellSize / 1.1).toInt(), true)
             }
@@ -138,10 +178,9 @@ class MazeView @JvmOverloads constructor(
         }
     }
 
-    // Функция для отзеркаливания Bitmap по горизонтали
     private fun mirrorBitmap(source: Bitmap): Bitmap {
         val matrix = Matrix()
-        matrix.setScale(-1f, 1f) // Отражаем по горизонтали
+        matrix.setScale(-1f, 1f)
         return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
     }
 
@@ -149,8 +188,8 @@ class MazeView @JvmOverloads constructor(
         val runnable = object : Runnable {
             override fun run() {
                 currentFrameIndex = (currentFrameIndex + 1) % playerFrames.size
-                invalidate() // Перерисовываем View
-                handler.postDelayed(this, 100) // Смена кадра каждые 100 мс
+                invalidate()
+                handler.postDelayed(this, 100)
             }
         }
         handler.post(runnable)
@@ -165,11 +204,10 @@ class MazeView @JvmOverloads constructor(
         offsetX = (w - mazeWidth) / 2f
         offsetY = (h - mazeHeight) / 2f
 
-        // Инициализация градиента для текста
         textShader = LinearGradient(
             0f, 0f, width.toFloat(), height.toFloat(),
-            Color.parseColor("#FFD700"), // Золотой
-            Color.parseColor("#FFA500"), // Оранжевый
+            Color.parseColor("#FFD700"),
+            Color.parseColor("#FFA500"),
             Shader.TileMode.CLAMP
         )
     }
@@ -177,7 +215,6 @@ class MazeView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        // Рисуем лабиринт
         for (row in maze.indices) {
             for (col in maze[row].indices) {
                 val x = col * cellSize + offsetX
@@ -185,11 +222,10 @@ class MazeView @JvmOverloads constructor(
 
                 when (maze[row][col]) {
                     1 -> {
-                        paint.color = Color.parseColor("#8B4513") // Коричневый цвет для стен
+                        paint.color = Color.parseColor("#8B4513")
                         canvas.drawRect(x, y, x + cellSize, y + cellSize, paint)
                     }
                     2 -> {
-                        // Рисуем изображение банана вместо зеленого круга
                         val bananaWidth = cellSize * 0.8f
                         val bananaHeight = cellSize * 0.8f
                         val left = x + (cellSize - bananaWidth) / 2
@@ -206,7 +242,6 @@ class MazeView @JvmOverloads constructor(
             }
         }
 
-        // Рисуем путь
         if (path.isNotEmpty()) {
             val pathToDraw = Path()
             val startX = path[0].first * cellSize + cellSize / 2 + offsetX
@@ -223,23 +258,18 @@ class MazeView @JvmOverloads constructor(
             canvas.drawPath(pathToDraw, pathPaint)
         }
 
-        // Рисуем игрока (текущий кадр анимации)
         if (playerFrames.isNotEmpty()) {
             val playerXPos = playerX * cellSize + offsetX + cellSize / 2
             val playerYPos = playerY * cellSize + offsetY + cellSize / 2
 
-            // Сохраняем состояние canvas
             canvas.save()
 
-            // Применяем отзеркаливание, если нужно
             if (isMirrored) {
                 canvas.scale(-1f, 1f, playerXPos, playerYPos)
             }
 
-            // Поворачиваем canvas вокруг центра игрока
             canvas.rotate(playerRotation, playerXPos, playerYPos)
 
-            // Рисуем изображение игрока
             canvas.drawBitmap(
                 playerFrames[currentFrameIndex],
                 playerXPos - (cellSize / 3),
@@ -247,14 +277,12 @@ class MazeView @JvmOverloads constructor(
                 null
             )
 
-            // Восстанавливаем состояние canvas
             canvas.restore()
         }
 
-        // Рисуем сообщение о завершении уровня
-        if (isLevelCompleted) {
+        if (isGameCompleted) {
             textPaint.shader = textShader
-            val text = "Уровень пройден!"
+            val text = "Все уровни пройдены!"
             canvas.drawText(text, width / 2f, height / 2f, textPaint)
         }
     }
@@ -262,23 +290,22 @@ class MazeView @JvmOverloads constructor(
     private fun movePlayer(newX: Int, newY: Int) {
         if (abs(playerX - newX) + abs(playerY - newY) == 1) {
             if (newX in maze[0].indices && newY in maze.indices && maze[newY][newX] != 1) {
-                // Определяем направление движения
                 when {
                     newX > playerX -> {
-                        playerRotation = 0f // Вправо
-                        isMirrored = true // Отзеркалить
+                        playerRotation = 0f
+                        isMirrored = true
                     }
                     newX < playerX -> {
-                        playerRotation = 0f // Влево
-                        isMirrored = false // Не отзеркаливать
+                        playerRotation = 0f
+                        isMirrored = false
                     }
                     newY > playerY -> {
-                        playerRotation = 270f // Вниз
-                        isMirrored = true // Отзеркалить
+                        playerRotation = 270f
+                        isMirrored = true
                     }
                     newY < playerY -> {
-                        playerRotation = 45f // Вверх
-                        isMirrored = true // Отзеркалить
+                        playerRotation = 45f
+                        isMirrored = true
                     }
                 }
 
@@ -286,6 +313,9 @@ class MazeView @JvmOverloads constructor(
 
                 if (maze[newY][newX] == 2) {
                     isLevelCompleted = true
+                    handler.postDelayed({
+                        nextLevel()
+                    }, 500) // Задержка перед переходом на следующий уровень
                 }
 
                 if (path.contains(newPos)) {
@@ -304,8 +334,28 @@ class MazeView @JvmOverloads constructor(
         }
     }
 
+    private fun nextLevel() {
+        if (currentLevel < levels.size - 1) {
+            currentLevel++
+            maze = levels[currentLevel]
+            val (startX, startY) = findStartPosition()
+            playerX = startX
+            playerY = startY
+            path.clear()
+            path.add(Pair(playerX, playerY))
+            playerRotation = 360f
+            isMirrored = false
+            isLevelCompleted = false
+            invalidate()
+        } else {
+            // Все уровни пройдены
+            isGameCompleted = true
+            invalidate()
+        }
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (isLevelCompleted) return true
+        if (isLevelCompleted || isGameCompleted) return true
         if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
             val touchX = ((event.x - offsetX) / cellSize).toInt()
             val touchY = ((event.y - offsetY) / cellSize).toInt()
@@ -318,6 +368,6 @@ class MazeView @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        handler.removeCallbacksAndMessages(null) // Остановка всех задач Handler
+        handler.removeCallbacksAndMessages(null)
     }
 }
