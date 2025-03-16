@@ -3,17 +3,20 @@ package com.example.mazegame5
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
+import androidx.room.OnConflictStrategy
+import androidx.room.Update
 
 @Dao
 interface ItemDao {
-    @Insert
-    suspend fun insertItem(item: Item)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGameTime(gameTime: GameTime)
 
-    @Query("SELECT * FROM maze_levels")
-    fun getAllItems(): Flow<List<Item>>
+    @Query("SELECT * FROM game_times WHERE id = :id")
+    suspend fun getGameTime(id: Int): GameTime?
 
-    @Query("DELETE FROM maze_levels")
-    suspend fun deleteAllItems()
+    @Update
+    suspend fun updateGameTime(gameTime: GameTime)
+
+    @Query("SELECT * FROM game_times")
+    suspend fun getAllGameTimes(): List<GameTime>
 }
-

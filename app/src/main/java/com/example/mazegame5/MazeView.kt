@@ -1,6 +1,8 @@
 package com.example.mazegame5
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.*
 import android.os.Handler
 import android.os.Looper
@@ -11,43 +13,41 @@ import android.view.View
 import kotlin.math.abs
 
 class MazeView @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
+    private val dao: ItemDao? = null
 ) : View(context, attrs, defStyleAttr) {
 
     private val paint = Paint()
     private val levels = listOf(
-        // Уровень 1
         arrayOf(
             intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 3, 1, 0, 0, 0, 1), // Стартовая позиция (3) на (2, 1)
+            intArrayOf(1, 0, 3, 1, 0, 0, 0, 1),
             intArrayOf(1, 0, 1, 1, 0, 1, 0, 1),
             intArrayOf(1, 0, 0, 0, 0, 1, 0, 1),
             intArrayOf(1, 1, 1, 1, 0, 1, 1, 1),
             intArrayOf(1, 0, 0, 0, 0, 0, 0, 1),
             intArrayOf(1, 0, 1, 1, 1, 1, 0, 1),
-            intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)  // Финиш (2)
+            intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)
         ),
-        // Уровень 2
         arrayOf(
             intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 0, 0, 1, 0, 3, 1), // Стартовая позиция (3) на (1, 1)
+            intArrayOf(1, 0, 0, 0, 1, 0, 3, 1),
             intArrayOf(1, 0, 1, 0, 1, 0, 1, 1),
             intArrayOf(1, 0, 1, 0, 0, 0, 1, 1),
             intArrayOf(1, 0, 1, 1, 1, 0, 0, 1),
             intArrayOf(1, 0, 0, 0, 0, 1, 0, 1),
             intArrayOf(1, 0, 1, 1, 0, 0, 1, 1),
-            intArrayOf(1, 1, 1, 1, 1, 2, 1, 1)  // Финиш (2)
+            intArrayOf(1, 1, 1, 1, 1, 2, 1, 1)
         ),
-        // Уровень 3
         arrayOf(
             intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 0, 0, 0, 0, 1, 1), // Стартовая позиция (3) на (2, 1)
+            intArrayOf(1, 0, 0, 0, 0, 0, 1, 1),
             intArrayOf(1, 0, 1, 1, 1, 0, 1, 1),
             intArrayOf(1, 0, 0, 0, 0, 0, 3, 1),
             intArrayOf(1, 0, 1, 1, 1, 1, 1, 1),
             intArrayOf(1, 0, 0, 0, 0, 0, 0, 1),
             intArrayOf(1, 0, 1, 1, 1, 1, 0, 1),
-            intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)  // Финиш (2)
+            intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)
         )
     )
 
@@ -63,6 +63,24 @@ class MazeView @JvmOverloads constructor(
     private var isLevelCompleted = false
     private var isGameCompleted = false
     private val path = mutableListOf<Pair<Int, Int>>()
+    private var startTime: Long = 0
+    private var currentLevelTime: Long = 0
+    private var isTimerRunning: Boolean = false
+    private var currentLevel1Time: Long = 0
+    private var currentLevel2Time: Long = 0
+    private var currentLevel3Time: Long = 0
+    private var totalGameTime: Long = 0
+    private var currentDifficultyId: Int = 1
+    private val timerHandler = Handler(Looper.getMainLooper())
+    private val timerRunnable = object : Runnable {
+        override fun run() {
+            if (isTimerRunning) {
+                currentLevelTime = System.currentTimeMillis() - startTime
+                invalidate()
+                timerHandler.postDelayed(this, 100)
+            }
+        }
+    }
 
     private val pathPaint = Paint().apply {
         color = Color.parseColor("#8B4513")
@@ -104,29 +122,50 @@ class MazeView @JvmOverloads constructor(
         paint.strokeWidth = 5f
         paint.isAntiAlias = true
 
-        // Находим стартовую позицию и устанавливаем начальные координаты игрока
         val (startX, startY) = findStartPosition()
         playerX = startX
         playerY = startY
         path.add(Pair(playerX, playerY))
 
-        // Устанавливаем начальное направление обезьяны (влево)
-        playerRotation = 360f // Смотрит влево
-        isMirrored = false // Не отзеркаливать
+        playerRotation = 360f
+        isMirrored = false
 
         loadPlayerFrames()
         bananaBitmap = loadBananaImage()
+        startTimer()
+
+    }
+    private fun startTimer() {
+        startTime = System.currentTimeMillis()
+        isTimerRunning = true
+        timerHandler.post(timerRunnable)
+    }
+
+    private fun formatTime(millis: Long): String {
+        val seconds = (millis / 1000) % 60
+        val minutes = (millis / (1000 * 60)) % 60
+        return String.format("%02d:%02d", minutes, seconds)
     }
 
     private fun findStartPosition(): Pair<Int, Int> {
         for (row in maze.indices) {
             for (col in maze[row].indices) {
-                if (maze[row][col] == 3) { // Ищем стартовую позицию (3)
-                    return Pair(col, row) // Возвращаем координаты (x, y)
+                if (maze[row][col] == 3) {
+                    return Pair(col, row)
                 }
             }
         }
         throw RuntimeException("Стартовая позиция не найдена в лабиринте!")
+    }
+    private fun navigateToResultActivity() {
+        val context = context
+        if (context is Activity) {
+            val intent = Intent(context, ResultActivity::class.java)
+            context.startActivity(intent)
+            context.finish()
+        } else {
+            Log.e("MazeView", "Контекст не является Activity")
+        }
     }
 
     private fun loadBananaImage(): Bitmap {
@@ -280,11 +319,20 @@ class MazeView @JvmOverloads constructor(
             canvas.restore()
         }
 
-        if (isGameCompleted) {
-            textPaint.shader = textShader
-            val text = "Все уровни пройдены!"
-            canvas.drawText(text, width / 2f, height / 2f, textPaint)
+
+
+        textPaint.apply {
+            color = Color.parseColor("#8B4513")
+            textSize = 60f
+            textAlign = Paint.Align.LEFT
+            setShadowLayer(5f, 2f, 2f, Color.BLACK)
         }
+        canvas.drawText(
+            "Time: ${formatTime(currentLevelTime)}",
+            width - 350f,
+            45f,
+            textPaint
+        )
     }
 
     private fun movePlayer(newX: Int, newY: Int) {
@@ -315,7 +363,7 @@ class MazeView @JvmOverloads constructor(
                     isLevelCompleted = true
                     handler.postDelayed({
                         nextLevel()
-                    }, 500) // Задержка перед переходом на следующий уровень
+                    }, 500)
                 }
 
                 if (path.contains(newPos)) {
@@ -335,6 +383,8 @@ class MazeView @JvmOverloads constructor(
     }
 
     private fun nextLevel() {
+        isTimerRunning = false
+        timerHandler.removeCallbacks(timerRunnable)
         if (currentLevel < levels.size - 1) {
             currentLevel++
             maze = levels[currentLevel]
@@ -347,10 +397,13 @@ class MazeView @JvmOverloads constructor(
             isMirrored = false
             isLevelCompleted = false
             invalidate()
+            startTimer()
         } else {
-            // Все уровни пройдены
             isGameCompleted = true
             invalidate()
+            isTimerRunning = false
+            timerHandler.removeCallbacks(timerRunnable)
+            navigateToResultActivity()
         }
     }
 
@@ -367,7 +420,10 @@ class MazeView @JvmOverloads constructor(
     }
 
     override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
+        super.onDetachedFromWindow();
         handler.removeCallbacksAndMessages(null)
+        timerHandler.removeCallbacksAndMessages(null)
     }
 }
+
+
