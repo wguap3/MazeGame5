@@ -3,14 +3,29 @@ package com.example.mazegame5
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
+import android.graphics.Shader
+import android.graphics.Typeface
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.ContextCompat.startActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.math.abs
+
 
 class MazeView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
@@ -69,8 +84,10 @@ class MazeView @JvmOverloads constructor(
     private var currentLevel1Time: Long = 0
     private var currentLevel2Time: Long = 0
     private var currentLevel3Time: Long = 0
+    private var bestLevel1Time: Long = Long.MAX_VALUE
+    private var bestLevel2Time: Long = Long.MAX_VALUE
+    private var bestLevel3Time: Long = Long.MAX_VALUE
     private var totalGameTime: Long = 0
-    private var currentDifficultyId: Int = 1
     private val timerHandler = Handler(Looper.getMainLooper())
     private val timerRunnable = object : Runnable {
         override fun run() {
@@ -81,6 +98,7 @@ class MazeView @JvmOverloads constructor(
             }
         }
     }
+
 
     private val pathPaint = Paint().apply {
         color = Color.parseColor("#8B4513")
@@ -157,10 +175,15 @@ class MazeView @JvmOverloads constructor(
         }
         throw RuntimeException("Стартовая позиция не найдена в лабиринте!")
     }
+
     private fun navigateToResultActivity() {
         val context = context
         if (context is Activity) {
-            val intent = Intent(context, ResultActivity::class.java)
+            val intent = Intent(context, ResultActivity::class.java).apply {
+                putExtra("CURRENT_LEVEL1", currentLevel1Time)
+                putExtra("CURRENT_LEVEL2", currentLevel2Time)
+                putExtra("CURRENT_LEVEL3", currentLevel3Time)
+            }
             context.startActivity(intent)
             context.finish()
         } else {
@@ -385,27 +408,101 @@ class MazeView @JvmOverloads constructor(
     private fun nextLevel() {
         isTimerRunning = false
         timerHandler.removeCallbacks(timerRunnable)
+
+        Log.d("MazeGame", "Level $currentLevel Time: $currentLevelTime ms")
+
+        // Сохранение времени текущего уровня
+        when (currentLevel+1) {
+            1 -> {
+                currentLevel1Time = currentLevelTime
+                if (currentLevel1Time < bestLevel1Time) {
+                    bestLevel1Time = currentLevel1Time
+                    Log.d("MazeGame", "New Best Time for Level 1: $bestLevel1Time ms")
+                    Log.d("MazeGame", "New  Time for Level 1: $currentLevel1Time ms")
+                }
+            }
+            2 -> {
+                currentLevel2Time = currentLevelTime
+                if (currentLevel2Time < bestLevel2Time) {
+                    bestLevel2Time = currentLevel2Time
+                    Log.d("MazeGame", "New Best Time for Level 2: $bestLevel2Time ms")
+                    Log.d("MazeGame", "New  Time for Level 2: $currentLevel2Time ms")
+                }
+            }
+            3 -> {
+                currentLevel3Time = currentLevelTime
+                if (currentLevel3Time < bestLevel3Time) {
+                    bestLevel3Time = currentLevel3Time
+                    Log.d("MazeGame", "New Best Time for Level 3: $bestLevel3Time ms")
+                    Log.d("MazeGame", "New  Time for Level 3: $currentLevel3Time ms")
+                }
+            }
+        }
+        Log.d("MazeGame", "Best Times -> L1: $bestLevel1Time, L2: $bestLevel2Time, L3: $bestLevel3Time")
+
+        val gameTime = GameTime(
+            id = 1,
+            bestTimeLevel1 = bestLevel1Time,
+            bestTimeLevel2 = bestLevel2Time,
+            bestTimeLevel3 = bestLevel3Time
+        )
+
+// Вставка или обновление данных в базе
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Получаем DAO
+                val dao = MainDb.getDb(context).getDao()
+
+                // Проверяем, существует ли запись
+                val existingGameTime = dao.getGameTime(1)
+
+                if (existingGameTime != null) {
+                    //gameTime.id = existingGameTime.id // Если запись существует, обновляем её
+                    dao.updateGameTime(gameTime)
+                    Log.d("Database", "Game time updated: $gameTime")
+                } else {
+                    dao.insertGameTime(gameTime) // Вставляем новую запись
+                    Log.d("Database", "Game time inserted: $gameTime")
+                }
+            } catch (e: Exception) {
+                Log.e("Database", "Error occurred: ${e.message}")
+            }
+        }
+
+        Log.d("MazeGame", " Times -> L1: $currentLevel1Time, L2: $currentLevel2Time, L3: $currentLevel3Time")
+
+
         if (currentLevel < levels.size - 1) {
             currentLevel++
             maze = levels[currentLevel]
+
             val (startX, startY) = findStartPosition()
             playerX = startX
             playerY = startY
             path.clear()
             path.add(Pair(playerX, playerY))
+
             playerRotation = 360f
             isMirrored = false
             isLevelCompleted = false
+
+            currentLevelTime = 0 // Сброс времени для нового уровня
+            Log.d("MazeGame", "Next level: $currentLevel, Timer reset to 0 ms")
+
             invalidate()
             startTimer()
         } else {
+
             isGameCompleted = true
-            invalidate()
             isTimerRunning = false
             timerHandler.removeCallbacks(timerRunnable)
+
+            totalGameTime = currentLevel1Time + currentLevel2Time + currentLevel3Time
+            Log.d("MazeGame", "Game Completed! Total Time: $totalGameTime ms")
             navigateToResultActivity()
         }
     }
+
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (isLevelCompleted || isGameCompleted) return true

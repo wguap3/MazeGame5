@@ -2,23 +2,11 @@ package com.example.mazegame5
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import kotlinx.coroutines.launch
-import androidx.lifecycle.lifecycleScope
-import com.example.mazegame5.MainDb
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-
-import com.example.mazegame5.GameTime
-
-import kotlinx.coroutines.launch
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -40,6 +28,11 @@ class MainActivity : AppCompatActivity() {
 
     fun Button11(view: View) {
         val button1Intent = Intent(this, MazeActivity1::class.java)
+        startActivity(button1Intent)
+    }
+
+    fun Button12(view: View) {
+        val button1Intent = Intent(this, StatisticsActivity::class.java)
         startActivity(button1Intent)
     }
 }

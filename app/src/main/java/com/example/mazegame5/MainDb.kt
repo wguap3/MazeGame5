@@ -7,7 +7,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [GameTime::class], version = 2)
+@Database(entities = [GameTime::class], version = 3)
 abstract class MainDb : RoomDatabase() {
     abstract fun getDao(): ItemDao
 
