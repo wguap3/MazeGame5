@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat.startActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.abs
 
 
@@ -87,6 +88,9 @@ class MazeView @JvmOverloads constructor(
     private var bestLevel1Time: Long = Long.MAX_VALUE
     private var bestLevel2Time: Long = Long.MAX_VALUE
     private var bestLevel3Time: Long = Long.MAX_VALUE
+    private var bestTimeFromDbLevel1 = Long.MAX_VALUE
+    private var bestTimeFromDbLevel2 = Long.MAX_VALUE
+    private var bestTimeFromDbLevel3 = Long.MAX_VALUE
     private var totalGameTime: Long = 0
     private val timerHandler = Handler(Looper.getMainLooper())
     private val timerRunnable = object : Runnable {
@@ -409,68 +413,92 @@ class MazeView @JvmOverloads constructor(
         isTimerRunning = false
         timerHandler.removeCallbacks(timerRunnable)
 
-        Log.d("MazeGame", "Level $currentLevel Time: $currentLevelTime ms")
+        val levelNumber = currentLevel + 1
+        val currentTime = currentLevelTime
 
-        // Сохранение времени текущего уровня
-        when (currentLevel+1) {
-            1 -> {
-                currentLevel1Time = currentLevelTime
-                if (currentLevel1Time < bestLevel1Time) {
-                    bestLevel1Time = currentLevel1Time
-                    Log.d("MazeGame", "New Best Time for Level 1: $bestLevel1Time ms")
-                    Log.d("MazeGame", "New  Time for Level 1: $currentLevel1Time ms")
-                }
-            }
-            2 -> {
-                currentLevel2Time = currentLevelTime
-                if (currentLevel2Time < bestLevel2Time) {
-                    bestLevel2Time = currentLevel2Time
-                    Log.d("MazeGame", "New Best Time for Level 2: $bestLevel2Time ms")
-                    Log.d("MazeGame", "New  Time for Level 2: $currentLevel2Time ms")
-                }
-            }
-            3 -> {
-                currentLevel3Time = currentLevelTime
-                if (currentLevel3Time < bestLevel3Time) {
-                    bestLevel3Time = currentLevel3Time
-                    Log.d("MazeGame", "New Best Time for Level 3: $bestLevel3Time ms")
-                    Log.d("MazeGame", "New  Time for Level 3: $currentLevel3Time ms")
-                }
-            }
+        // Сохраняем текущее время уровня
+        when (levelNumber) {
+            1 -> currentLevel1Time = currentTime
+            2 -> currentLevel2Time = currentTime
+            3 -> currentLevel3Time = currentTime
         }
-        Log.d("MazeGame", "Best Times -> L1: $bestLevel1Time, L2: $bestLevel2Time, L3: $bestLevel3Time")
 
-        val gameTime = GameTime(
-            id = 1,
-            bestTimeLevel1 = bestLevel1Time,
-            bestTimeLevel2 = bestLevel2Time,
-            bestTimeLevel3 = bestLevel3Time
-        )
-
-// Вставка или обновление данных в базе
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Получаем DAO
                 val dao = MainDb.getDb(context).getDao()
+                val recordId = 1
 
-                // Проверяем, существует ли запись
-                val existingGameTime = dao.getGameTime(1)
+                // 1. Явно получаем значения для каждого уровня через отдельные методы DAO
+                bestTimeFromDbLevel1 = dao.getBestLevel1Time(recordId) ?: Long.MAX_VALUE
+                bestTimeFromDbLevel2 = dao.getBestLevel2Time(recordId) ?: Long.MAX_VALUE
+                bestTimeFromDbLevel3 = dao.getBestLevel3Time(recordId) ?: Long.MAX_VALUE
 
-                if (existingGameTime != null) {
-                    //gameTime.id = existingGameTime.id // Если запись существует, обновляем её
-                    dao.updateGameTime(gameTime)
-                    Log.d("Database", "Game time updated: $gameTime")
-                } else {
-                    dao.insertGameTime(gameTime) // Вставляем новую запись
-                    Log.d("Database", "Game time inserted: $gameTime")
+                // 2. Проверяем существование основной записи
+                if (dao.getGameTime(recordId) == null) {
+                    dao.insert(GameTime(recordId, Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE))
+
+                    // Повторно получаем значения после создания записи
+                    bestTimeFromDbLevel1 = dao.getBestLevel1Time(recordId) ?: Long.MAX_VALUE
+                    bestTimeFromDbLevel2 = dao.getBestLevel2Time(recordId) ?: Long.MAX_VALUE
+                    bestTimeFromDbLevel3 = dao.getBestLevel3Time(recordId) ?: Long.MAX_VALUE
                 }
+
+                // 3. Сравниваем и обновляем для конкретного уровня
+                when (levelNumber) {
+                    1 -> {
+                        if (currentTime < bestTimeFromDbLevel1) {
+                            dao.updateLevel1Time(recordId, currentTime)
+                            bestTimeFromDbLevel1 = currentTime // Обновляем локальную переменную
+                        }
+                    }
+                    2 -> {
+                        if (currentTime < bestTimeFromDbLevel2) {
+                            dao.updateLevel2Time(recordId, currentTime)
+                            bestTimeFromDbLevel2 = currentTime
+                        }
+                    }
+                    3 -> {
+                        if (currentTime < bestTimeFromDbLevel3) {
+                            dao.updateLevel3Time(recordId, currentTime)
+                            bestTimeFromDbLevel3 = currentTime
+                        }
+                    }
+                }
+
+                // 4. Принудительно обновляем все переменные из БД после операций
+                bestTimeFromDbLevel1 = dao.getBestLevel1Time(recordId) ?: Long.MAX_VALUE
+                bestTimeFromDbLevel2 = dao.getBestLevel2Time(recordId) ?: Long.MAX_VALUE
+                bestTimeFromDbLevel3 = dao.getBestLevel3Time(recordId) ?: Long.MAX_VALUE
+
+                // 5. Синхронизируем с главными переменными
+                withContext(Dispatchers.Main) {
+                    bestLevel1Time = bestTimeFromDbLevel1
+                    bestLevel2Time = bestTimeFromDbLevel2
+                    bestLevel3Time = bestTimeFromDbLevel3
+                }
+
+                // Логируем результаты
+                Log.d("DB_Data", """
+                Уровень $levelNumber
+                Из БД: 
+                L1 = $bestTimeFromDbLevel1
+                L2 = $bestTimeFromDbLevel2
+                L3 = $bestTimeFromDbLevel3
+                Текущее время: $currentTime
+            """.trimIndent())
+
             } catch (e: Exception) {
-                Log.e("Database", "Error occurred: ${e.message}")
+                Log.e("DB_Error", "Ошибка работы с БД: ${e.localizedMessage}")
             }
         }
 
-        Log.d("MazeGame", " Times -> L1: $currentLevel1Time, L2: $currentLevel2Time, L3: $currentLevel3Time")
-
+        // Логирование текущих значений сессии
+        Log.d("Current_Session", """
+        Текущие результаты:
+        L1: $currentLevel1Time
+        L2: $currentLevel2Time
+        L3: $currentLevel3Time
+    """.trimIndent())
 
         if (currentLevel < levels.size - 1) {
             currentLevel++
