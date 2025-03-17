@@ -43,5 +43,6 @@ class MainActivity : AppCompatActivity() {
         val button1Intent = Intent(this, MazeActivity3::class.java)
         startActivity(button1Intent)
     }
+
 }
 

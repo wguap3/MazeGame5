@@ -5,32 +5,11 @@ import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.room.Dao
-import androidx.room.Database
-import androidx.room.Entity
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Room
-import androidx.room.RoomDatabase
-
-// LiveData
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.AndroidViewModel
-
-// Android
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
+
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
-// Coroutine
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 class ResultActivity : AppCompatActivity() {
     private lateinit var resultTextView: TextView

@@ -23,4 +23,5 @@ class MazeActivity3 : AppCompatActivity() {
         val button1Intent = Intent(this, MainActivity::class.java)
         startActivity(button1Intent)
     }
+
 }

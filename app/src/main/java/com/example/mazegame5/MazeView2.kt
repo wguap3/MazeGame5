@@ -36,34 +36,48 @@ class MazeView2 @JvmOverloads constructor(
     private val paint = Paint()
     private val levels = listOf(
         arrayOf(
-            intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 3, 1, 0, 0, 0, 1),
-            intArrayOf(1, 0, 1, 1, 0, 1, 0, 1),
-            intArrayOf(1, 0, 0, 0, 0, 1, 0, 1),
-            intArrayOf(1, 1, 1, 1, 0, 1, 1, 1),
-            intArrayOf(1, 0, 0, 0, 0, 0, 0, 1),
-            intArrayOf(1, 0, 1, 1, 1, 1, 0, 1),
-            intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1),
+            intArrayOf(1,0,0,0,0,0,1,3,0,0,0,1),
+            intArrayOf(1,0,1,1,1,0,1,1,1,1,0,1),
+            intArrayOf(1,0,0,0,1,0,0,0,0,1,0,1),
+            intArrayOf(1,0,1,0,1,1,1,1,0,1,0,1),
+            intArrayOf(1,0,1,0,0,0,0,1,0,0,0,1),
+            intArrayOf(1,0,1,1,1,1,0,1,1,1,1,1),
+            intArrayOf(1,0,0,0,0,1,0,0,0,0,0,1),
+            intArrayOf(1,1,1,1,0,1,1,1,1,1,0,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,1,0,1),
+            intArrayOf(1,0,1,1,1,1,1,1,0,0,0,1),
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,2,1)
         ),
+
         arrayOf(
-            intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 0, 0, 1, 0, 3, 1),
-            intArrayOf(1, 0, 1, 0, 1, 0, 1, 1),
-            intArrayOf(1, 0, 1, 0, 0, 0, 1, 1),
-            intArrayOf(1, 0, 1, 1, 1, 0, 0, 1),
-            intArrayOf(1, 0, 0, 0, 0, 1, 0, 1),
-            intArrayOf(1, 0, 1, 1, 0, 0, 1, 1),
-            intArrayOf(1, 1, 1, 1, 1, 2, 1, 1)
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1),
+            intArrayOf(1,0,0,0,0,0,0,1,0,0,3,1),
+            intArrayOf(1,0,1,1,1,1,0,1,0,1,1,1),
+            intArrayOf(1,0,0,0,0,1,0,0,0,1,0,1),
+            intArrayOf(1,0,1,1,0,1,1,1,1,1,0,1),
+            intArrayOf(1,0,1,0,0,0,0,0,0,0,0,1),
+            intArrayOf(1,0,1,1,1,1,1,1,0,1,1,1),
+            intArrayOf(1,0,0,0,0,0,0,1,0,0,0,1),
+            intArrayOf(1,1,1,1,1,1,0,1,1,1,0,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,1,0,1),
+            intArrayOf(1,1,1,1,1,1,1,1,0,0,0,1),
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,2,1)
         ),
+
         arrayOf(
-            intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 0, 0, 0, 0, 1, 1),
-            intArrayOf(1, 0, 1, 1, 1, 0, 1, 1),
-            intArrayOf(1, 0, 0, 0, 0, 0, 3, 1),
-            intArrayOf(1, 0, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 0, 0, 0, 0, 0, 1),
-            intArrayOf(1, 0, 1, 1, 1, 1, 0, 1),
-            intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1),
+            intArrayOf(1,0,0,0,0,0,1,0,0,0,3,1),
+            intArrayOf(1,0,1,1,1,0,1,0,1,1,1,1),
+            intArrayOf(1,0,0,0,1,0,0,0,1,0,0,1),
+            intArrayOf(1,0,1,0,1,1,1,1,1,0,1,1),
+            intArrayOf(1,0,1,0,0,0,0,0,0,0,0,1),
+            intArrayOf(1,0,1,1,1,1,1,1,1,1,0,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,1,0,1),
+            intArrayOf(1,1,1,1,1,1,0,1,0,1,1,1),
+            intArrayOf(1,0,0,0,0,1,0,1,0,0,0,1),
+            intArrayOf(1,0,1,1,0,0,0,1,1,1,0,1),
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,2,1)
         )
     )
 
@@ -150,7 +164,7 @@ class MazeView2 @JvmOverloads constructor(
         path.add(Pair(playerX, playerY))
 
         playerRotation = 360f
-        isMirrored = false
+        isMirrored = true
 
         loadPlayerFrames()
         bananaBitmap = loadBananaImage()
@@ -236,7 +250,7 @@ class MazeView2 @JvmOverloads constructor(
             }
 
             playerFrames.replaceAll {
-                Bitmap.createScaledBitmap(it, (cellSize / 0.85).toInt(), (cellSize / 1.1).toInt(), true)
+                Bitmap.createScaledBitmap(it, (cellSize / 1.1).toInt(), (cellSize / 1.7).toInt(), true)
             }
         } catch (e: Exception) {
             Log.e("MazeView", "Ошибка загрузки кадров: ${e.message}")
@@ -422,6 +436,8 @@ class MazeView2 @JvmOverloads constructor(
             2 -> currentLevel2Time = currentTime
             3 -> currentLevel3Time = currentTime
         }
+
+
 
         CoroutineScope(Dispatchers.IO).launch {
             try {

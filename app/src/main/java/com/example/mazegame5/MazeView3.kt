@@ -35,35 +35,64 @@ class MazeView3 @JvmOverloads constructor(
 
     private val paint = Paint()
     private val levels = listOf(
+        // Уровень 1 - "Лабиринт Минотавра"
         arrayOf(
-            intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 3, 1, 0, 0, 0, 1),
-            intArrayOf(1, 0, 1, 1, 0, 1, 0, 1),
-            intArrayOf(1, 0, 0, 0, 0, 1, 0, 1),
-            intArrayOf(1, 1, 1, 1, 0, 1, 1, 1),
-            intArrayOf(1, 0, 0, 0, 0, 0, 0, 1),
-            intArrayOf(1, 0, 1, 1, 1, 1, 0, 1),
-            intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
+            intArrayOf(1,0,0,0,3,1,0,0,1,0,1,0,0,0,0,1),
+            intArrayOf(1,1,1,0,1,1,1,0,1,0,1,1,1,1,0,1),
+            intArrayOf(1,0,1,0,0,0,1,0,0,0,0,0,0,1,0,1),
+            intArrayOf(1,0,1,1,1,0,1,1,1,1,1,1,0,1,0,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
+            intArrayOf(1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1),
+            intArrayOf(1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,1),
+            intArrayOf(1,0,1,0,0,0,0,1,0,0,0,1,0,1,0,1),
+            intArrayOf(1,0,1,0,1,1,0,1,1,1,1,1,0,1,0,1),
+            intArrayOf(1,0,1,0,1,0,0,0,0,0,0,1,0,1,0,1),
+            intArrayOf(1,0,1,0,1,1,1,1,1,1,0,1,0,1,1,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1),
+            intArrayOf(1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1),
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1)
         ),
+
+        // Уровень 2 - "Смертельная спираль"
         arrayOf(
-            intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 0, 0, 1, 0, 3, 1),
-            intArrayOf(1, 0, 1, 0, 1, 0, 1, 1),
-            intArrayOf(1, 0, 1, 0, 0, 0, 1, 1),
-            intArrayOf(1, 0, 1, 1, 1, 0, 0, 1),
-            intArrayOf(1, 0, 0, 0, 0, 1, 0, 1),
-            intArrayOf(1, 0, 1, 1, 0, 0, 1, 1),
-            intArrayOf(1, 1, 1, 1, 1, 2, 1, 1)
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
+            intArrayOf(1,0,3,1,0,0,0,0,0,0,0,0,0,0,0,1),
+            intArrayOf(1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1),
+            intArrayOf(1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1),
+            intArrayOf(1,0,1,0,0,0,0,0,0,0,0,1,0,1,0,1),
+            intArrayOf(1,0,1,0,1,1,1,1,1,1,0,1,0,1,0,1),
+            intArrayOf(1,0,1,0,1,0,0,0,0,1,0,1,0,1,0,1),
+            intArrayOf(1,0,1,0,1,0,1,1,0,1,0,1,0,1,0,1),
+            intArrayOf(1,0,1,0,1,0,1,2,0,1,0,1,0,1,0,1),
+            intArrayOf(1,1,1,0,1,0,1,1,1,1,0,1,0,1,0,1),
+            intArrayOf(1,0,1,0,1,0,0,0,0,0,0,1,0,1,0,1),
+            intArrayOf(1,0,1,0,1,1,1,1,1,1,1,1,0,1,0,1),
+            intArrayOf(1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,1),
+            intArrayOf(1,0,0,0,1,0,1,0,1,0,1,0,0,0,0,1),
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)
         ),
+
+        // Уровень 3 - "Коридор Смерти"
         arrayOf(
-            intArrayOf(1, 1, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 0, 0, 0, 0, 1, 1),
-            intArrayOf(1, 0, 1, 1, 1, 0, 1, 1),
-            intArrayOf(1, 0, 0, 0, 0, 0, 3, 1),
-            intArrayOf(1, 0, 1, 1, 1, 1, 1, 1),
-            intArrayOf(1, 0, 0, 0, 0, 0, 0, 1),
-            intArrayOf(1, 0, 1, 1, 1, 1, 0, 1),
-            intArrayOf(1, 1, 1, 1, 1, 1, 2, 1)
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
+            intArrayOf(1,0,3,1,0,0,0,1,0,0,0,1,0,0,0,1),
+            intArrayOf(1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1),
+            intArrayOf(1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1),
+            intArrayOf(1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,1),
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1),
+            intArrayOf(1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
+            intArrayOf(1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1),
+            intArrayOf(1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1),
+            intArrayOf(1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1),
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1),
+            intArrayOf(1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1),
+            intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1)
         )
     )
 
@@ -236,7 +265,7 @@ class MazeView3 @JvmOverloads constructor(
             }
 
             playerFrames.replaceAll {
-                Bitmap.createScaledBitmap(it, (cellSize / 0.85).toInt(), (cellSize / 1.1).toInt(), true)
+                Bitmap.createScaledBitmap(it, (cellSize / 1.7).toInt(), (cellSize / 1.9).toInt(), true)
             }
         } catch (e: Exception) {
             Log.e("MazeView", "Ошибка загрузки кадров: ${e.message}")
@@ -423,6 +452,7 @@ class MazeView3 @JvmOverloads constructor(
             3 -> currentLevel3Time = currentTime
         }
 
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val dao = MainDb.getDb(context).getDao()
@@ -550,3 +580,4 @@ class MazeView3 @JvmOverloads constructor(
         timerHandler.removeCallbacksAndMessages(null)
     }
 }
+

@@ -9,7 +9,7 @@
     tools:context=".MazeActivity3">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/imageView1"
         android:layout_width="377dp"
         android:layout_height="141dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -21,7 +21,7 @@
         app:srcCompat="@drawable/maze_game_24_02_2025" />
 
     <Button
-        android:id="@+id/button23"
+        android:id="@+id/button34"
         android:layout_width="309dp"
         android:layout_height="68dp"
         android:backgroundTint="#00FFFFFF"
@@ -34,26 +34,28 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.806" />
+        app:layout_constraintVertical_bias="0.863" />
 
     <ImageView
-        android:id="@+id/imageView23"
+        android:id="@+id/imageView21"
         android:layout_width="355dp"
         android:layout_height="157dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.853"
+        app:layout_constraintVertical_bias="0.924"
         app:srcCompat="@drawable/main_screen_16_03_2025" />
 
     <com.example.mazegame5.MazeView3
         android:id="@+id/mazeView3"
-        android:layout_width="297dp"
-        android:layout_height="271dp"
+        android:layout_width="284dp"
+        android:layout_height="362dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.504"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.531" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
